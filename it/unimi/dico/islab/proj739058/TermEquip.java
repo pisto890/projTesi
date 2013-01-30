@@ -10,7 +10,7 @@ import it.unimi.dico.islab.textanalyzer.tools.TermsDescriptor;
 import it.unimi.dico.islab.textanalyzer.tools.TextAnalyzer;
 
 /**
- * This class provides ...
+ * This class provides to create a term_equip
  * @author Isacco Borsani
  *
  */
