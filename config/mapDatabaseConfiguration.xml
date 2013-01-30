@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN" "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+  <session-factory>
+    <!-- Database connection settings -->
+    <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
+    <property name="connection.url">jdbc:mysql://127.0.0.1:8080/kc</property>
+    <property name="connection.username">postgres</property>
+    <property name="connection.password">admin7256</property>
+    <!-- SQL dialect -->
+    <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
+    <!-- Enable Hibernate's automatic session context management -->
+    <property name="current_session_context_class">thread</property>
+    <property name="hibernate.connection.autocommit">false</property>
+    <!-- Echo all executed SQL to stdout -->
+    <property name="show_sql">false</property>
+    <mapping resource="it/unimi/dico/islab/idbs2/map/Mapping.hbm.xml"/>
+    <mapping resource="it/unimi/dico/islab/idbs2/map/MappingSet.hbm.xml"/>
+    <mapping resource="it/unimi/dico/islab/idbs2/map/User.hbm.xml"/>
+    <mapping resource="it/unimi/dico/islab/idbs2/map/Configuration.hbm.xml"/>
+  </session-factory>
+</hibernate-configuration>
