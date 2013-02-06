@@ -24,17 +24,21 @@ public class Test_multipopTE {
 		int language = TextAnalyzer.ITA;
 		Scanner in = new Scanner(System.in);
 		KCSessionManager.beginTransaction();
-		List<KnowledgeChunk> kcl = new ArrayList<KnowledgeChunk>();
+		List<KnowledgeChunk> kcl1 = new ArrayList<KnowledgeChunk>();
 		TextManager tm = new TextManager();
 		
-		for ( int i = 1 ; i <= 5 ; i++) 
-			kcl.add(KCSessionManager.kcm.getKnowledgeChunkById(in.nextLine()));
+		for ( int i = 1 ; i <= 2 ; i++) 
+			kcl1.add(KCSessionManager.kcm.getKnowledgeChunkById(in.nextLine()));
 		
-		Map<String,String> m = tm.getTextbyProperties(kcl);
-		System.out.println(m);
+		Map<String,String> m = tm.getTextbyProperties(kcl1);
 		CorpusAnalyzer a = tm.getCorpusAnalyzer(m,language);
 		TermEquip te = new TermEquip(a);
-		te.popTE(language,true,false,false,false);
+		a.useLowerFilter(true);
+		a.useElisionFilter(true);
+		a.useStopFilter(true);
+		//a.enableStemming();
+		te.popTE(a);
+				
 	}
 
 }

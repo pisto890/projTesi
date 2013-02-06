@@ -37,36 +37,26 @@ public class TermEquip {
 	 * @return void
 	 */
 	
-	public void popTE(int language,boolean stem,boolean elision,boolean lowerf,boolean stopf) {
+	public void popTE(CorpusAnalyzer a) {
+		
+		boolean stem = false;
+		
+		if (a.isStemming()) stem = true;
 		
 		a.disableStemLem();
-		if (elision)
-			a.useElisionFilter(true);
-		if (lowerf)
-			a.useLowerFilter(true);
-		if (stopf)
-			a.useStopFilter(true);
-		
 		a.analyze();
-		TextAnalyzer ta = new TextAnalyzer(language);
+		TextAnalyzer ta = new TextAnalyzer(a.getLanguage());
+		
 		if (stem) {
 			ta.enableStemming(); // Solo se è abilitato lo stemming
-			if (elision)
-				ta.useElisionFilter(true);
-			if (lowerf)
-				ta.useLowerFilter(true);
-			if (stopf)
-				ta.useStopFilter(true);
 		}
-		Set<String> keys = a.getAllTextIDs();
+		
+		Set<String> keys = a.getAllTextIDs(); //it takes all kc keys 
 		for (String k : keys) {
 			KnowledgeChunk kc = KCSessionManager.kcm.getKnowledgeChunkById(k);
-			Vector<String> v = a.getAnalyzedTextByID(k);
+			Vector<String> v = a.getAnalyzedTextByID(k); //String vector of current kc
 			TermsDescriptor occurrences = a.runOccurrences();
-			//TermsDescriptor IDF = a.runIDF();
-			//getTextByID returns not-anaylized-textValue of the map indexed by id = k
-			//TermsDescriptor TF = a.getAnalyzedTF(a.getTextByID(k));
-			TermsDescriptor TFIDF = a.getAnalyzedTFIDF(k);
+			TermsDescriptor TFIDF = a.getAnalyzedTFIDF(k); // it computes , for each term in kc , the tf-idf relevance
 			for (String s : v) {
 				//for-each term of analyzed text we calculate occurences and
 				//tf-idf relevance
@@ -77,14 +67,14 @@ public class TermEquip {
 
 				if (TFIDF.containsKey(s)) 
 					relevance = TFIDF.get(s);
-				
+								
 				kc.addTerm(s, relevance, occurrence.intValue());
 				//Alternative forms
 				if (stem) {
 					Vector<String> alternatives = ta.analyzeText(s);
 					//Per ogni forma alternata popolare la rispettiva tabella
 						for (String altern : alternatives)
-								kc.getTerm(s).addTransformation(s, altern);
+								kc.getTerm(s).addTransformation("Stemming", altern);
 				}
 			}
 		}

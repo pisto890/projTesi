@@ -26,7 +26,7 @@ public class Test_popTE {
 		System.out.println(m);
 		CorpusAnalyzer a = tm.getCorpusAnalyzer(m,language);
 		TermEquip te = new TermEquip(a);
-		te.popTE(language,true,true,true,true);
+		te.popTE(a);
 	}
 
 }

@@ -84,7 +84,7 @@ public class TextManager {
 			KnowledgeChunk b = new KnowledgeChunk(pn);
 			query = "FROM Predicate pr WHERE pr.belongKc ='" + kc.getId() + "' AND (pr.p1 = '"+a.getId()+"' AND pr.pn ='"+b.getId()+"')";
 			pred = s.createQuery(query).list();
-				for ( Predicate pr : pred)
+				for ( Predicate pr : pred) 
 					if (pr.getValueText() != null)
 						text_result += pr.getValueText() + " ";
 					else
@@ -121,7 +121,7 @@ public class TextManager {
 	/**
 	 * This method create a CorpusAnalyzer that contain the texts
 	 * to analyze
-	 * @param Map<String,String>kc_text
+	 * @param Map<String,String>kc_text,int language
 	 * @return CorpusAnalyzer a
 	 */
 
