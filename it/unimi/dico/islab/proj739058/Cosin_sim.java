@@ -1,15 +1,20 @@
 package it.unimi.dico.islab.proj739058;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.hibernate.Session;
 
 import it.unimi.dico.islab.idbs2.kc.KnowledgeChunk;
 import it.unimi.dico.islab.idbs2.kc.Term;
 import it.unimi.dico.islab.idbs2.kc.session.KCSessionManager;
+
+/**
+ * This class provides a method that it compute the similarity between two kc using
+ * cosine-similarity algorithm.
+ * @author isacco
+ *
+ */
 
 public class Cosin_sim implements MatchIF {
 
@@ -31,9 +36,11 @@ public class Cosin_sim implements MatchIF {
 		Session s = KCSessionManager.getSessionFactory().getCurrentSession();
 		s.beginTransaction();
 		
+		@SuppressWarnings("unchecked")
 		List<Term> ls1 =
 				s.createQuery("FROM Term t WHERE t.kc = '" + id1 + "'").list();
 		
+		@SuppressWarnings("unchecked")
 		List<Term> ls2 =
 				s.createQuery("FROM Term t WHERE t.kc = '" + id2 + "'").list();
 	

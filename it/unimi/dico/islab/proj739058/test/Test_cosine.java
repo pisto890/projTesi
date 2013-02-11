@@ -1,5 +1,6 @@
 package it.unimi.dico.islab.proj739058.test;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ public class Test_cosine {
 		List<KnowledgeChunk> kcl1 = new ArrayList<KnowledgeChunk>();
 		List<KnowledgeChunk> kcl2 = new ArrayList<KnowledgeChunk>();
 		TextManager tm = new TextManager();
+		DecimalFormat df = new DecimalFormat("#.##");
 		
 		//primo corpus
 		
@@ -43,27 +45,11 @@ public class Test_cosine {
 		a.useLowerFilter(true);
 		a.useElisionFilter(true);
 		a.useStopFilter(true);
-		//a.enableStemming();
+		a.enableStemming();
 		te.popTE(a);
 		
 		KCSessionManager.beginTransaction();
-		//secondo corpus
-		
-		System.out.println("Secondo corpus");
-		
-		
-		for ( int i = 1 ; i <= 4 ; i++) 
-			kcl2.add(KCSessionManager.kcm.getKnowledgeChunkById(in.nextLine()));
-		
-		m = tm.getTextbyProperties(kcl2);
-		a = tm.getCorpusAnalyzer(m,language);
-		te = new TermEquip(a);
-		a.useLowerFilter(true);
-		a.useElisionFilter(true);
-		a.useStopFilter(true);
-		//a.enableStemming();
-		te.popTE(a);
-		
+
 		//calcolo cosine
 		
 		System.out.println("Inserisci ora l'id dei kc da confrontare:");
@@ -73,7 +59,7 @@ public class Test_cosine {
 		KnowledgeChunk k1 = KCSessionManager.kcm.getKnowledgeChunkById(idk1);
 		KnowledgeChunk k2 = KCSessionManager.kcm.getKnowledgeChunkById(idk2);
 		
-		System.out.println(new Cosin_sim().match(k1,k2));
+		System.out.println(df.format(new Cosin_sim().match(k1,k2)));
 		
 	}
 
