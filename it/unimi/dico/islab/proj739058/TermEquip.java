@@ -1,9 +1,17 @@
 package it.unimi.dico.islab.proj739058;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import org.hibernate.Session;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
 import it.unimi.dico.islab.idbs2.kc.KnowledgeChunk;
+import it.unimi.dico.islab.idbs2.kc.Term;
+import it.unimi.dico.islab.idbs2.kc.TermTransformation;
 import it.unimi.dico.islab.idbs2.kc.session.KCSessionManager;
 import it.unimi.dico.islab.textanalyzer.tools.CorpusAnalyzer;
 import it.unimi.dico.islab.textanalyzer.tools.TermsDescriptor;
@@ -17,6 +25,8 @@ import it.unimi.dico.islab.textanalyzer.tools.TextAnalyzer;
 
 public class TermEquip {
 
+	
+	@SuppressWarnings("unused")
 	private CorpusAnalyzer a;
 	
 	/**
@@ -40,16 +50,20 @@ public class TermEquip {
 	public void popTE(CorpusAnalyzer a) {
 		
 		boolean stem = false;
+		boolean lem = false;
 		
 		if (a.isStemming()) stem = true;
+		if (a.isLemmatization()) lem = true;
 		
 		a.disableStemLem();
 		a.analyze();
 		TextAnalyzer ta = new TextAnalyzer(a.getLanguage());
 		
-		if (stem) {
+		if (stem)
 			ta.enableStemming(); // Solo se è abilitato lo stemming
-		}
+		
+		if (lem)
+			ta.enableLemmatization();
 		
 		Set<String> keys = a.getAllTextIDs(); //it takes all kc keys 
 		for (String k : keys) {
@@ -75,9 +89,99 @@ public class TermEquip {
 					//Per ogni forma alternata popolare la rispettiva tabella
 						for (String altern : alternatives)
 								kc.getTerm(s).addTransformation("Stemming", altern);
+				}else if(lem) {
+					Vector<String> alternatives = ta.analyzeText(s);
+					//Per ogni forma alternata popolare la rispettiva tabella
+						for (String altern : alternatives)
+								kc.getTerm(s).addTransformation("Lemmatization", altern);
 				}
 			}
 		}
 		KCSessionManager.commitTransaction();
+		if (stem) a.enableStemming();
+		else if (lem) a.enableLemmatization();
+	}
+	
+	public void enrichText(KnowledgeChunk a,List<KnowledgeChunk> kcl , CorpusAnalyzer c) throws Exception {
+						
+		Session s = KCSessionManager.getSessionFactory().getCurrentSession();
+		s.beginTransaction();
+		
+			@SuppressWarnings("unchecked")
+			List<Term> ls1 =
+					s.createQuery("FROM Term t").list();
+			
+			if(c.isStemming() || c.isLemmatization()) {
+				@SuppressWarnings("unchecked")
+				List<TermTransformation> ls2 = s.createQuery("FROM TermTransformation tr").list();
+				for ( TermTransformation tr : ls2 ) 
+					s.delete(tr);
+			}
+			
+			for ( Term t : ls1 ) 
+				s.delete(t);
+			
+		s.getTransaction().commit();
+		
+		TextManager tm = new TextManager();
+		Map<String,String> m = tm.getTextbyProperties(kcl);
+		
+		String url_value = m.get(a.getId());
+		
+		for ( int i = 0 ; i < url_value.length() ; i++)
+			if (url_value.charAt(i)==' ') {
+				url_value = url_value.replace(' ', '_');
+			}
+		Document doc = Jsoup.connect("http://it.wikipedia.org/wiki/"+url_value).get();
+		String enrichedText = doc.body().text();
+		
+		m.remove(a.getId());
+		m.put(a.getId(), enrichedText);
+		CorpusAnalyzer n = tm.getCorpusAnalyzer(m,c.getLanguage());
+		TermEquip te = new TermEquip(n);
+		if (c.isLowerFilter())n.useLowerFilter(true);
+		if (c.isElisionFilter())n.useElisionFilter(true);
+		if (c.isStopFilter())n.useStopFilter(true);
+		if (c.isStemming())n.enableStemming();
+		if (c.isLemmatization())n.enableLemmatization();
+	
+		te.popTE(n);
+		
+	}
+	
+	public void denrichText(List<KnowledgeChunk> kcl , CorpusAnalyzer c) throws Exception {
+		
+		Session s = KCSessionManager.getSessionFactory().getCurrentSession();
+		s.beginTransaction();
+		
+			@SuppressWarnings("unchecked")
+			List<Term> ls1 =
+					s.createQuery("FROM Term t").list();
+			
+			if(c.isStemming() || c.isLemmatization()) {
+				@SuppressWarnings("unchecked")
+				List<TermTransformation> ls2 = s.createQuery("FROM TermTransformation tr").list();
+				for ( TermTransformation tr : ls2 ) 
+					s.delete(tr);
+			}
+			
+			for ( Term t : ls1 ) 
+				s.delete(t);
+			
+		s.getTransaction().commit();
+		
+		TextManager tm = new TextManager();
+		Map<String,String> m = tm.getTextbyProperties(kcl);
+		CorpusAnalyzer n = tm.getCorpusAnalyzer(m,c.getLanguage());
+		TermEquip te = new TermEquip(n);
+		if (c.isLowerFilter())n.useLowerFilter(true);
+		if (c.isElisionFilter())n.useElisionFilter(true);
+		if (c.isStopFilter())n.useStopFilter(true);
+		if (c.isStemming())n.enableStemming();
+		if (c.isLemmatization())n.enableLemmatization();
+	
+		te.popTE(n);
+		
+		
 	}
 }

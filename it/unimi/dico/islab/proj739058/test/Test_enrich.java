@@ -1,6 +1,5 @@
 package it.unimi.dico.islab.proj739058.test;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +13,8 @@ import it.unimi.dico.islab.proj739058.TextManager;
 import it.unimi.dico.islab.textanalyzer.tools.CorpusAnalyzer;
 import it.unimi.dico.islab.textanalyzer.tools.TextAnalyzer;
 
-public class Test_stemming {
+
+public class Test_enrich {
 
 	/**
 	 * @param args
@@ -22,14 +22,13 @@ public class Test_stemming {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		String idk1,idk2;
 		int language = TextAnalyzer.ITA;
+		String idk1,idk2;
 		Scanner in = new Scanner(System.in);
 		KCSessionManager.beginTransaction();
 		List<KnowledgeChunk> kcl1 = new ArrayList<KnowledgeChunk>();
 		TextManager tm = new TextManager();
-		DecimalFormat df = new DecimalFormat("#.##");
-				
+		
 		for ( int i = 1 ; i <= 4 ; i++) 
 			kcl1.add(KCSessionManager.kcm.getKnowledgeChunkById(in.nextLine()));
 		
@@ -41,19 +40,9 @@ public class Test_stemming {
 		a.useStopFilter(true);
 		a.enableStemming();
 		te.popTE(a);
-		
-		KCSessionManager.beginTransaction();
-
-		//calcolo cosine
-		
-		System.out.println("Inserisci ora l'id dei kc da confrontare:");
-		
-		idk1 = in.nextLine();
-		idk2 = in.nextLine();
-		KnowledgeChunk k1 = KCSessionManager.kcm.getKnowledgeChunkById(idk1);
-		KnowledgeChunk k2 = KCSessionManager.kcm.getKnowledgeChunkById(idk2);
-		
-		System.out.println(df.format(new Sim_calc().match(k1,k2,'s')));
+		String id = in.nextLine();
+		te.enrichText(KCSessionManager.kcm.getKnowledgeChunkById(id),kcl1,a);		
+		te.denrichText(kcl1, a);
 		
 	}
 

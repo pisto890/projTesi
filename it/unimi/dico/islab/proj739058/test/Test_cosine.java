@@ -8,12 +8,11 @@ import java.util.Scanner;
 
 import it.unimi.dico.islab.idbs2.kc.KnowledgeChunk;
 import it.unimi.dico.islab.idbs2.kc.session.KCSessionManager;
+import it.unimi.dico.islab.proj739058.Sim_calc;
 import it.unimi.dico.islab.proj739058.TermEquip;
 import it.unimi.dico.islab.proj739058.TextManager;
 import it.unimi.dico.islab.textanalyzer.tools.CorpusAnalyzer;
 import it.unimi.dico.islab.textanalyzer.tools.TextAnalyzer;
-import it.unimi.dico.islab.proj739058.Cosin_sim;
-
 
 public class Test_cosine {
 
@@ -28,7 +27,6 @@ public class Test_cosine {
 		Scanner in = new Scanner(System.in);
 		KCSessionManager.beginTransaction();
 		List<KnowledgeChunk> kcl1 = new ArrayList<KnowledgeChunk>();
-		List<KnowledgeChunk> kcl2 = new ArrayList<KnowledgeChunk>();
 		TextManager tm = new TextManager();
 		DecimalFormat df = new DecimalFormat("#.##");
 		
@@ -59,7 +57,7 @@ public class Test_cosine {
 		KnowledgeChunk k1 = KCSessionManager.kcm.getKnowledgeChunkById(idk1);
 		KnowledgeChunk k2 = KCSessionManager.kcm.getKnowledgeChunkById(idk2);
 		
-		System.out.println(df.format(new Cosin_sim().match(k1,k2)));
+		System.out.println(df.format(new Sim_calc().match(k1,k2,'c')));
 		
 	}
 

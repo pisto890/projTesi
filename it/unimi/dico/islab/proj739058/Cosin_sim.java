@@ -16,7 +16,7 @@ import it.unimi.dico.islab.idbs2.kc.session.KCSessionManager;
  *
  */
 
-public class Cosin_sim implements MatchIF {
+public class Cosin_sim {
 
 	public double match(KnowledgeChunk a , KnowledgeChunk b) {
 		

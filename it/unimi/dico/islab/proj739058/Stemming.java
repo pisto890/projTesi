@@ -15,7 +15,7 @@ import it.unimi.dico.islab.idbs2.kc.session.KCSessionManager;
  *
  */
 
-public class Stemming implements MatchIF {
+public class Stemming {
 
 	public double match(KnowledgeChunk a , KnowledgeChunk b) {
 		
