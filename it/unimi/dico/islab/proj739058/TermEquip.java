@@ -19,7 +19,7 @@ import it.unimi.dico.islab.textanalyzer.tools.TextAnalyzer;
 
 /**
  * This class provides to create a term_equip
- * @author Isacco Borsani
+ * @author Isacco Borsani N°mat: 739058
  *
  */
 
@@ -102,6 +102,20 @@ public class TermEquip {
 		else if (lem) a.enableLemmatization();
 	}
 	
+	/**
+	 * This method enrich the term-equip of KnowledgeChunk a
+	 * Is usefull to increase the matching-accuracy 
+	 * when the input is composed by two short segments of text
+	 * e.g: Apple pie vs Apple computer
+	 * @param KnowledgeChunk a
+	 * @param List<KnowledgeChunk> kcl
+	 * @param CorpusAnalyzer c
+	 * @throws Exception
+	 */
+	
+	
+	//non ha molto senso farlo con un kc, bisognerebbe modificarlo passandogli:
+	//List<KnowledgeChunk> a
 	public void enrichText(KnowledgeChunk a,List<KnowledgeChunk> kcl , CorpusAnalyzer c) throws Exception {
 						
 		Session s = KCSessionManager.getSessionFactory().getCurrentSession();

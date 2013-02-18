@@ -7,7 +7,6 @@ import java.util.Scanner;
 
 import it.unimi.dico.islab.idbs2.kc.KnowledgeChunk;
 import it.unimi.dico.islab.idbs2.kc.session.KCSessionManager;
-import it.unimi.dico.islab.proj739058.Sim_calc;
 import it.unimi.dico.islab.proj739058.TermEquip;
 import it.unimi.dico.islab.proj739058.TextManager;
 import it.unimi.dico.islab.textanalyzer.tools.CorpusAnalyzer;
@@ -23,7 +22,6 @@ public class Test_enrich {
 	public static void main(String[] args) throws Exception {
 
 		int language = TextAnalyzer.ITA;
-		String idk1,idk2;
 		Scanner in = new Scanner(System.in);
 		KCSessionManager.beginTransaction();
 		List<KnowledgeChunk> kcl1 = new ArrayList<KnowledgeChunk>();

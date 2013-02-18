@@ -12,7 +12,7 @@ import it.unimi.dico.islab.idbs2.kc.session.KCSessionManager;
 /**
  * This class provides a method that it compute the similarity between two kc using
  * cosine-similarity algorithm.
- * @author isacco
+ * @author Isacco Borsani N°mat: 739058
  *
  */
 

@@ -4,9 +4,10 @@ import it.unimi.dico.islab.idbs2.kc.KnowledgeChunk;
 
 /**
  * Match Interface provides an abstract method "match" that is implemented
- * by a class, this one is used to check similarity between two kc taking their id.
+ * by Sim_calc.java. This one is used to check similarity between two kc taking their id
+ * and similarity type: C,S,L (cosine,stemming and lemmatization).
  * The similarity algorithm is specific for each class.
- * @author isacco
+ * @author Isacco Borsani N°mat: 739058
  *
  */
 
