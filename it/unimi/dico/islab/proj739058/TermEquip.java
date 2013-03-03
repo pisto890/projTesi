@@ -1,5 +1,11 @@
 package it.unimi.dico.islab.proj739058;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -8,6 +14,8 @@ import java.util.Vector;
 import org.hibernate.Session;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+
+import com.google.gson.Gson;
 
 import it.unimi.dico.islab.idbs2.kc.KnowledgeChunk;
 import it.unimi.dico.islab.idbs2.kc.Term;
@@ -66,10 +74,11 @@ public class TermEquip {
 			ta.enableLemmatization();
 		
 		Set<String> keys = a.getAllTextIDs(); //it takes all kc keys 
+		TermsDescriptor occurrences = a.runOccurrences(); //SPOSTATO
+		
 		for (String k : keys) {
 			KnowledgeChunk kc = KCSessionManager.kcm.getKnowledgeChunkById(k);
 			Vector<String> v = a.getAnalyzedTextByID(k); //String vector of current kc
-			TermsDescriptor occurrences = a.runOccurrences();
 			TermsDescriptor TFIDF = a.getAnalyzedTFIDF(k); // it computes , for each term in kc , the tf-idf relevance
 			for (String s : v) {
 				//for-each term of analyzed text we calculate occurences and
@@ -114,53 +123,84 @@ public class TermEquip {
 	 */
 	
 	
-	//non ha molto senso farlo con un kc, bisognerebbe modificarlo passandogli:
-	//List<KnowledgeChunk> a
-	public void enrichText(KnowledgeChunk a,List<KnowledgeChunk> kcl , CorpusAnalyzer c) throws Exception {
-						
+	//Caso base
+	public void enrichText(List<KnowledgeChunk> list , List<KnowledgeChunk> kcl , CorpusAnalyzer a, int n) throws Exception {
+		
+		String google = "http://ajax.googleapis.com/ajax/services/search/web?num=1&v=1.0&q=";
+		String search = "";
+		String charset = "UTF-8";
+				
+		String enrichedText = "";
+		
 		Session s = KCSessionManager.getSessionFactory().getCurrentSession();
 		s.beginTransaction();
 		
-			@SuppressWarnings("unchecked")
-			List<Term> ls1 =
-					s.createQuery("FROM Term t").list();
-			
-			if(c.isStemming() || c.isLemmatization()) {
-				@SuppressWarnings("unchecked")
-				List<TermTransformation> ls2 = s.createQuery("FROM TermTransformation tr").list();
-				for ( TermTransformation tr : ls2 ) 
-					s.delete(tr);
-			}
-			
-			for ( Term t : ls1 ) 
-				s.delete(t);
-			
-		s.getTransaction().commit();
-		
+		//Creating new HashMap to restore a new termEquip and termForm with kc enriched
 		TextManager tm = new TextManager();
-		Map<String,String> m = tm.getTextbyProperties(kcl);
+		Map<String,String> m = tm.getTextbyProperties(kcl); // e se glielo passassi?
 		
-		String url_value = m.get(a.getId());
+		List<List<Term>> l = new ArrayList();
 		
-		for ( int i = 0 ; i < url_value.length() ; i++)
-			if (url_value.charAt(i)==' ') {
-				url_value = url_value.replace(' ', '_');
-			}
-		Document doc = Jsoup.connect("http://it.wikipedia.org/wiki/"+url_value).get();
-		String enrichedText = doc.body().text();
+		/*Getting terms SWITCH */
 		
-		m.remove(a.getId());
-		m.put(a.getId(), enrichedText);
-		CorpusAnalyzer n = tm.getCorpusAnalyzer(m,c.getLanguage());
-		TermEquip te = new TermEquip(n);
-		if (c.isLowerFilter())n.useLowerFilter(true);
-		if (c.isElisionFilter())n.useElisionFilter(true);
-		if (c.isStopFilter())n.useStopFilter(true);
-		if (c.isStemming())n.enableStemming();
-		if (c.isLemmatization())n.enableLemmatization();
+		//for-each kc of the kc that i want enrich (this is the base case)
+		for (KnowledgeChunk kc : list) {
+			List<Term> ls =
+				s.createQuery("FROM Term t WHERE t.kc = '" + kc.getId() + "'").list();
+			l.add(ls);
+		}
+		
+		/*Delete old Term_equip & Term_form */
+		
+		@SuppressWarnings("unchecked")
+		List<Term> ls1 =
+				s.createQuery("FROM Term t").list();
+		
+		if(a.isStemming() || a.isLemmatization()) {
+			@SuppressWarnings("unchecked")
+			List<TermTransformation> ls2 = s.createQuery("FROM TermTransformation tr").list();
+			for ( TermTransformation tr : ls2 ) 
+				s.delete(tr);
+		}
+		
+		for ( Term t : ls1 ) 
+			s.delete(t);
+				
+	s.getTransaction().commit();
+		
+	/*End*/
 	
-		te.popTE(n);
+		int count = 0;
+		for (List<Term> ls : l) {
+			
+			m.remove(list.get(count).getId());
+
+			for (Term t : ls) {
+				search = t.getValue() + " wikipedia";
+				URL url = new URL(google + URLEncoder.encode(search, charset) +"&gl=it");
+				Reader reader = new InputStreamReader(url.openStream(), charset);
+				GoogleResults results = new Gson().fromJson(reader, GoogleResults.class);
+				System.out.println(results.getResponseData().getResults().get(0).getUrl().replace("en","it"));
+				Document doc = Jsoup.connect(results.getResponseData().getResults().get(0).getUrl().replace("en", "it")).get();
+				enrichedText += doc.body().text();
+				
+			}
+			
+			m.put(list.get(count++).getId(), enrichedText);
+			enrichedText = "";
+		}
 		
+		
+		CorpusAnalyzer nc = tm.getCorpusAnalyzer(m,a.getLanguage());
+		TermEquip te = new TermEquip(nc);
+		if (a.isLowerFilter())nc.useLowerFilter(true);
+		if (a.isElisionFilter())nc.useElisionFilter(true);
+		if (a.isStopFilter())nc.useStopFilter(true);
+		if (a.isStemming())nc.enableStemming();
+		if (a.isLemmatization()) nc.enableLemmatization();
+
+		te.popTE(nc);
+	
 	}
 	
 	public void denrichText(List<KnowledgeChunk> kcl , CorpusAnalyzer c) throws Exception {
@@ -199,3 +239,55 @@ public class TermEquip {
 		
 	}
 }
+
+
+/*String url_value = m.get(a.getId());
+
+for ( int i = 0 ; i < url_value.length() ; i++)
+	if (url_value.charAt(i)==' ') {
+		url_value = url_value.replace(' ', '_');
+	}
+Document doc = Jsoup.connect("http://it.wikipedia.org/wiki/"+url_value).get();
+String enrichedText = doc.body().text();*/
+
+
+
+/*public void enrichText(KnowledgeChunk a,List<KnowledgeChunk> kcl , CorpusAnalyzer c) throws Exception {
+
+String enrichedText = "";
+Session s = KCSessionManager.getSessionFactory().getCurrentSession();
+s.beginTransaction();
+
+	@SuppressWarnings("unchecked")
+	List<Term> ls1 =
+			s.createQuery("FROM Term t").list();
+	
+	if(c.isStemming() || c.isLemmatization()) {
+		@SuppressWarnings("unchecked")
+		List<TermTransformation> ls2 = s.createQuery("FROM TermTransformation tr").list();
+		for ( TermTransformation tr : ls2 ) 
+			s.delete(tr);
+	}
+	
+	for ( Term t : ls1 ) 
+		s.delete(t);
+	
+s.getTransaction().commit();
+
+TextManager tm = new TextManager();
+Map<String,String> m = tm.getTextbyProperties(kcl);
+
+m.remove(a.getId());
+m.put(a.getId(), enrichedText);
+CorpusAnalyzer n = tm.getCorpusAnalyzer(m,c.getLanguage());
+TermEquip te = new TermEquip(n);
+if (c.isLowerFilter())n.useLowerFilter(true);
+if (c.isElisionFilter())n.useElisionFilter(true);
+if (c.isStopFilter())n.useStopFilter(true);
+if (c.isStemming())n.enableStemming();
+if (c.isLemmatization())n.enab
+eLemmatization();
+
+te.popTE(n);
+
+}*/

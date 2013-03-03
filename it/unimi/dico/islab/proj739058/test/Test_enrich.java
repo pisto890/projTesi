@@ -24,13 +24,14 @@ public class Test_enrich {
 		int language = TextAnalyzer.ITA;
 		Scanner in = new Scanner(System.in);
 		KCSessionManager.beginTransaction();
-		List<KnowledgeChunk> kcl1 = new ArrayList<KnowledgeChunk>();
+		List<KnowledgeChunk> kcl = new ArrayList<KnowledgeChunk>();
+		List<KnowledgeChunk> list = new ArrayList<KnowledgeChunk>();
 		TextManager tm = new TextManager();
 		
 		for ( int i = 1 ; i <= 4 ; i++) 
-			kcl1.add(KCSessionManager.kcm.getKnowledgeChunkById(in.nextLine()));
+			kcl.add(KCSessionManager.kcm.getKnowledgeChunkById(in.nextLine()));
 		
-		Map<String,String> m = tm.getTextbyProperties(kcl1);
+		Map<String,String> m = tm.getTextbyProperties(kcl);
 		CorpusAnalyzer a = tm.getCorpusAnalyzer(m,language);
 		TermEquip te = new TermEquip(a);
 		a.useLowerFilter(true);
@@ -38,9 +39,13 @@ public class Test_enrich {
 		a.useStopFilter(true);
 		a.enableStemming();
 		te.popTE(a);
-		String id = in.nextLine();
-		te.enrichText(KCSessionManager.kcm.getKnowledgeChunkById(id),kcl1,a);		
-		te.denrichText(kcl1, a);
+		System.out.println("Inserisci la lista di kc che vuoi arricchire");
+		
+		for ( int i = 0 ; i < 1 ; i++ ) 
+			list.add(KCSessionManager.kcm.getKnowledgeChunkById(in.nextLine()));
+			
+		te.enrichText(list,kcl,a,3);		
+		te.denrichText(kcl, a);
 		
 	}
 
