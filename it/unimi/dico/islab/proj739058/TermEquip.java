@@ -11,7 +11,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import org.hibernate.Query;
 import org.hibernate.Session;
+import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -124,12 +126,12 @@ public class TermEquip {
 	
 	
 	//Caso base
-	public void enrichText(List<KnowledgeChunk> list , List<KnowledgeChunk> kcl , CorpusAnalyzer a, int n) throws Exception {
+	public void enrichText(List<KnowledgeChunk> list , List<KnowledgeChunk> kcl , CorpusAnalyzer a, char type , int k) throws Exception {
 		
 		String google = "http://ajax.googleapis.com/ajax/services/search/web?num=1&v=1.0&q=";
 		String search = "";
 		String charset = "UTF-8";
-				
+						
 		String enrichedText = "";
 		
 		Session s = KCSessionManager.getSessionFactory().getCurrentSession();
@@ -138,16 +140,40 @@ public class TermEquip {
 		//Creating new HashMap to restore a new termEquip and termForm with kc enriched
 		TextManager tm = new TextManager();
 		Map<String,String> m = tm.getTextbyProperties(kcl); // e se glielo passassi?
+		Document doc = new Document("");
 		
 		List<List<Term>> l = new ArrayList();
-		
+		List<Term>li = new ArrayList();
 		/*Getting terms SWITCH */
 		
 		//for-each kc of the kc that i want enrich (this is the base case)
+		//Assume that "list" is a subset of "kcl"
 		for (KnowledgeChunk kc : list) {
-			List<Term> ls =
-				s.createQuery("FROM Term t WHERE t.kc = '" + kc.getId() + "'").list();
-			l.add(ls);
+			
+			switch(type) {
+			
+			case 'b':
+				//Every term t
+				li= s.createQuery("FROM Term t WHERE t.kc = '" + kc.getId() + "'").list();
+				break;
+			case 'a':
+				//Top k-relevance-term
+				Query q = s.createQuery("FROM Term t " +
+						"WHERE t.kc = '" + kc.getId() + "' " +
+						"ORDER BY t.relevance DESC ");
+				q.setMaxResults(k);
+				li = q.list();
+				break;
+				
+			case 'h':
+				//Only Hashtag : Twitter case study
+				li = s.createQuery("FROM Term t " +
+						"WHERE t.kc = '" + kc.getId() + "'" +
+								" AND t.value LIKE '#%'").list();
+				break;
+			}
+			if ( li.isEmpty()) System.out.println("ciao");
+			l.add(li);
 		}
 		
 		/*Delete old Term_equip & Term_form */
@@ -175,21 +201,35 @@ public class TermEquip {
 			
 			m.remove(list.get(count).getId());
 
+			//for-each term, enrich with Google & Wikipedia
 			for (Term t : ls) {
-				search = t.getValue() + " wikipedia";
+				switch(type) {
+				case 'h' :
+					search = t.getValue().replace("#", "") + " wikipedia";
+					break;
+				default:
+					search = t.getValue() + " wikipedia";
+					break;
+				}
+				System.out.println(search);
 				URL url = new URL(google + URLEncoder.encode(search, charset) +"&gl=it");
 				Reader reader = new InputStreamReader(url.openStream(), charset);
 				GoogleResults results = new Gson().fromJson(reader, GoogleResults.class);
-				System.out.println(results.getResponseData().getResults().get(0).getUrl().replace("en","it"));
-				Document doc = Jsoup.connect(results.getResponseData().getResults().get(0).getUrl().replace("en", "it")).get();
-				enrichedText += doc.body().text();
-				
+				if (results == null ) System.out.println("pd");
+				try {
+					System.out.println(results.getResponseData().getResults().get(0).getUrl().replace("en.wikipedia.org","it.wikipedia.org"));
+					doc = Jsoup.connect(results.getResponseData().getResults().get(0).getUrl().replace("en.wikipedia.org", "it.wikipedia.org")).get();
+					enrichedText += doc.body().text();
+				}catch(HttpStatusException | IndexOutOfBoundsException | NullPointerException e) {
+					System.out.println(search.replace("wikipedia", ""));
+					enrichedText += " " + search.replace("wikipedia", "");
+				}
+
 			}
 			
 			m.put(list.get(count++).getId(), enrichedText);
 			enrichedText = "";
 		}
-		
 		
 		CorpusAnalyzer nc = tm.getCorpusAnalyzer(m,a.getLanguage());
 		TermEquip te = new TermEquip(nc);
@@ -199,8 +239,8 @@ public class TermEquip {
 		if (a.isStemming())nc.enableStemming();
 		if (a.isLemmatization()) nc.enableLemmatization();
 
-		te.popTE(nc);
-	
+		te.popTE(nc);		
+			
 	}
 	
 	public void denrichText(List<KnowledgeChunk> kcl , CorpusAnalyzer c) throws Exception {
@@ -291,3 +331,11 @@ eLemmatization();
 te.popTE(n);
 
 }*/
+
+/* SELECT * 
+FROM term_eq 
+WHERE kc = 'http://islab.di.unimi.it/sent_cloud/sentence#1'
+ORDER BY relevance desc
+LIMIT 3 */
+
+//http://islab.di.unimi.it/sent_cloud/sentence#1

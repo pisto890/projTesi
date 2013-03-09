@@ -38,7 +38,7 @@ public class Prova_inserimento {
 	    	kcm.saveOrUpdate(temp);
 	    	KCSessionManager.commitTransaction();
 	   	 	}
-	   	 	count = 1;
+	   	 	
 	    }
 
 	}
