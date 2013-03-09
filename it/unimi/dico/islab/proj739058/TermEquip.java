@@ -81,6 +81,7 @@ public class TermEquip {
 		for (String k : keys) {
 			KnowledgeChunk kc = KCSessionManager.kcm.getKnowledgeChunkById(k);
 			Vector<String> v = a.getAnalyzedTextByID(k); //String vector of current kc
+			String notAnalyzedtext = a.getTextByID(k);
 			TermsDescriptor TFIDF = a.getAnalyzedTFIDF(k); // it computes , for each term in kc , the tf-idf relevance
 			for (String s : v) {
 				//for-each term of analyzed text we calculate occurences and
@@ -93,7 +94,11 @@ public class TermEquip {
 				if (TFIDF.containsKey(s)) 
 					relevance = TFIDF.get(s);
 								
-				kc.addTerm(s, relevance, occurrence.intValue());
+				if (notAnalyzedtext.contains("#"+s))
+					kc.addTerm("#"+s, relevance, occurrence.intValue());
+				else
+					kc.addTerm(s, relevance, occurrence.intValue());
+				
 				//Alternative forms
 				if (stem) {
 					Vector<String> alternatives = ta.analyzeText(s);
@@ -172,7 +177,7 @@ public class TermEquip {
 								" AND t.value LIKE '#%'").list();
 				break;
 			}
-			if ( li.isEmpty()) System.out.println("ciao");
+			if ( li.isEmpty()) System.out.println("lista vuota");
 			l.add(li);
 		}
 		
@@ -201,6 +206,7 @@ public class TermEquip {
 			
 			m.remove(list.get(count).getId());
 
+			boolean flag = false;
 			//for-each term, enrich with Google & Wikipedia
 			for (Term t : ls) {
 				switch(type) {
@@ -215,16 +221,20 @@ public class TermEquip {
 				URL url = new URL(google + URLEncoder.encode(search, charset) +"&gl=it");
 				Reader reader = new InputStreamReader(url.openStream(), charset);
 				GoogleResults results = new Gson().fromJson(reader, GoogleResults.class);
-				if (results == null ) System.out.println("pd");
-				try {
-					System.out.println(results.getResponseData().getResults().get(0).getUrl().replace("en.wikipedia.org","it.wikipedia.org"));
-					doc = Jsoup.connect(results.getResponseData().getResults().get(0).getUrl().replace("en.wikipedia.org", "it.wikipedia.org")).get();
-					enrichedText += doc.body().text();
-				}catch(HttpStatusException | IndexOutOfBoundsException | NullPointerException e) {
-					System.out.println(search.replace("wikipedia", ""));
-					enrichedText += " " + search.replace("wikipedia", "");
-				}
-
+				flag = false;
+				do {
+					try {
+						System.out.println(results.getResponseData().getResults().get(0).getUrl().replace("en.wikipedia.org","it.wikipedia.org"));
+						doc = Jsoup.connect(results.getResponseData().getResults().get(0).getUrl().replace("en.wikipedia.org", "it.wikipedia.org")).get();
+						enrichedText += doc.body().text();
+						flag = false;
+					}catch(HttpStatusException | IndexOutOfBoundsException | NullPointerException e) {
+						//System.out.println(search.replace("wikipedia", ""));
+						//enrichedText += " " + search.replace("wikipedia", "");
+						System.out.println("no");
+						flag = true;
+					}
+				}while(flag);
 			}
 			
 			m.put(list.get(count++).getId(), enrichedText);
@@ -339,3 +349,4 @@ ORDER BY relevance desc
 LIMIT 3 */
 
 //http://islab.di.unimi.it/sent_cloud/sentence#1
+//http://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=microsoft&srprop=timestamp&format=json

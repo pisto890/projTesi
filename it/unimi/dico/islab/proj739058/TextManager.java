@@ -97,7 +97,7 @@ public class TextManager {
 					text_result += pr.getValueText() + " ";
 				else
 					text_result += pr.getValue() + " ";
-				
+		
 		final_res.put(kc.getId(), text_result);
 		return final_res;
 	}

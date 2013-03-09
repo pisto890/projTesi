@@ -35,16 +35,16 @@ public class Test_enrich {
 		CorpusAnalyzer a = tm.getCorpusAnalyzer(m,language);
 		TermEquip te = new TermEquip(a);
 		a.useLowerFilter(true);
-		a.useElisionFilter(true);
+		//a.useElisionFilter(true);
 		a.useStopFilter(true);
-		a.enableStemming();
+		//a.enableStemming();
 		te.popTE(a);
 		System.out.println("Inserisci la lista di kc che vuoi arricchire");
 		
 		for ( int i = 0 ; i < 1 ; i++ ) 
 			list.add(KCSessionManager.kcm.getKnowledgeChunkById(in.nextLine()));
 			
-		te.enrichText(list,kcl,a,'a',3);		
+		te.enrichText(list,kcl,a,'b',3);		
 		//te.denrichText(kcl, a);
 		
 	}
