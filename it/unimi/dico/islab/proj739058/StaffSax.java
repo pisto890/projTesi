@@ -1,4 +1,4 @@
-package it.unimi.dico.islab.proj739058.test;
+package it.unimi.dico.islab.proj739058;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +17,7 @@ public class StaffSax extends DefaultHandler
          String gName, Attributes attributes) throws SAXException
     {
       if (localName.equals("p")) {
-        // System.out.println(attributes.getValue("","title"));
-         results.add(attributes.getValue("","title"));
+         results.add(attributes.getValue("","title").replace(" ", "_"));
       }
     }
 }

@@ -44,7 +44,7 @@ public class Test_enrich {
 		for ( int i = 0 ; i < 1 ; i++ ) 
 			list.add(KCSessionManager.kcm.getKnowledgeChunkById(in.nextLine()));
 			
-		te.enrichText(list,kcl,a,'b',3);		
+		te.enrichText(list,kcl,a,'h',3);		
 		//te.denrichText(kcl, a);
 		
 	}

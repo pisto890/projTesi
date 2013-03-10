@@ -17,12 +17,17 @@ import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import com.google.gson.Gson;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
+
 
 import it.unimi.dico.islab.idbs2.kc.KnowledgeChunk;
 import it.unimi.dico.islab.idbs2.kc.Term;
 import it.unimi.dico.islab.idbs2.kc.TermTransformation;
 import it.unimi.dico.islab.idbs2.kc.session.KCSessionManager;
+import it.unimi.dico.islab.proj739058.test.StaffSax;
 import it.unimi.dico.islab.textanalyzer.tools.CorpusAnalyzer;
 import it.unimi.dico.islab.textanalyzer.tools.TermsDescriptor;
 import it.unimi.dico.islab.textanalyzer.tools.TextAnalyzer;
@@ -95,7 +100,7 @@ public class TermEquip {
 					relevance = TFIDF.get(s);
 								
 				if (notAnalyzedtext.contains("#"+s))
-					kc.addTerm("#"+s, relevance, occurrence.intValue());
+					kc.addTerm("hashtag"+s, relevance, occurrence.intValue());
 				else
 					kc.addTerm(s, relevance, occurrence.intValue());
 				
@@ -133,9 +138,8 @@ public class TermEquip {
 	//Caso base
 	public void enrichText(List<KnowledgeChunk> list , List<KnowledgeChunk> kcl , CorpusAnalyzer a, char type , int k) throws Exception {
 		
-		String google = "http://ajax.googleapis.com/ajax/services/search/web?num=1&v=1.0&q=";
 		String search = "";
-		String charset = "UTF-8";
+		String link ="";
 						
 		String enrichedText = "";
 		
@@ -146,6 +150,8 @@ public class TermEquip {
 		TextManager tm = new TextManager();
 		Map<String,String> m = tm.getTextbyProperties(kcl); // e se glielo passassi?
 		Document doc = new Document("");
+		StaffSax handler;
+
 		
 		List<List<Term>> l = new ArrayList();
 		List<Term>li = new ArrayList();
@@ -171,13 +177,13 @@ public class TermEquip {
 				break;
 				
 			case 'h':
-				//Only Hashtag : Twitter case study
+				//Only Hashtag : Twitter's case study
 				li = s.createQuery("FROM Term t " +
 						"WHERE t.kc = '" + kc.getId() + "'" +
-								" AND t.value LIKE '#%'").list();
+								" AND t.value LIKE hashtag% ").list();
 				break;
 			}
-			if ( li.isEmpty()) System.out.println("lista vuota");
+			if ( li.isEmpty()) System.out.println("lista vuota!!");
 			l.add(li);
 		}
 		
@@ -206,35 +212,23 @@ public class TermEquip {
 			
 			m.remove(list.get(count).getId());
 
-			boolean flag = false;
 			//for-each term, enrich with Google & Wikipedia
 			for (Term t : ls) {
-				switch(type) {
-				case 'h' :
-					search = t.getValue().replace("#", "") + " wikipedia";
-					break;
-				default:
-					search = t.getValue() + " wikipedia";
-					break;
-				}
+				handler = new StaffSax();
+				search = t.getValue().replace("#", "");
 				System.out.println(search);
-				URL url = new URL(google + URLEncoder.encode(search, charset) +"&gl=it");
-				Reader reader = new InputStreamReader(url.openStream(), charset);
-				GoogleResults results = new Gson().fromJson(reader, GoogleResults.class);
-				flag = false;
-				do {
-					try {
-						System.out.println(results.getResponseData().getResults().get(0).getUrl().replace("en.wikipedia.org","it.wikipedia.org"));
-						doc = Jsoup.connect(results.getResponseData().getResults().get(0).getUrl().replace("en.wikipedia.org", "it.wikipedia.org")).get();
-						enrichedText += doc.body().text();
-						flag = false;
-					}catch(HttpStatusException | IndexOutOfBoundsException | NullPointerException e) {
-						//System.out.println(search.replace("wikipedia", ""));
-						//enrichedText += " " + search.replace("wikipedia", "");
-						System.out.println("no");
-						flag = true;
-					}
-				}while(flag);
+				link = "http://it.wikipedia.org/w/api.php?action=query&list=search&srsearch="+search+"&srprop=timestamp&format=xml";
+			    XMLReader myReader = XMLReaderFactory.createXMLReader();
+			    myReader.setContentHandler(handler);
+			    URL purl = new URL(link);
+			    myReader.parse(new InputSource(purl.openStream()));
+				
+			    if ( handler.results.size() == 0) continue;
+			    
+			    System.out.println("http://it.wikipedia.org/wiki/"+handler.results.get(0).replace(" ","_"));			    	
+			    doc = Jsoup.connect("http://it.wikipedia.org/wiki/"+handler.results.get(0).replace(" ", "_")).get();
+			    enrichedText += doc.body().text();
+			    
 			}
 			
 			m.put(list.get(count++).getId(), enrichedText);
