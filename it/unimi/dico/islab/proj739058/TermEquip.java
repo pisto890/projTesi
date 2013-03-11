@@ -99,8 +99,10 @@ public class TermEquip {
 				if (TFIDF.containsKey(s)) 
 					relevance = TFIDF.get(s);
 								
-				if (notAnalyzedtext.contains("#"+s))
-					kc.addTerm("hashtag"+s, relevance, occurrence.intValue());
+				if (notAnalyzedtext.contains("#"+s)){
+					s = "#"+s;
+					kc.addTerm(s, relevance, occurrence.intValue());
+				}
 				else
 					kc.addTerm(s, relevance, occurrence.intValue());
 				
@@ -108,8 +110,9 @@ public class TermEquip {
 				if (stem) {
 					Vector<String> alternatives = ta.analyzeText(s);
 					//Per ogni forma alternata popolare la rispettiva tabella
-						for (String altern : alternatives)
+						for (String altern : alternatives){
 								kc.getTerm(s).addTransformation("Stemming", altern);
+						}
 				}else if(lem) {
 					Vector<String> alternatives = ta.analyzeText(s);
 					//Per ogni forma alternata popolare la rispettiva tabella
@@ -180,7 +183,7 @@ public class TermEquip {
 				//Only Hashtag : Twitter's case study
 				li = s.createQuery("FROM Term t " +
 						"WHERE t.kc = '" + kc.getId() + "'" +
-								" AND t.value LIKE hashtag% ").list();
+								" AND t.value LIKE '#%' ").list();
 				break;
 			}
 			if ( li.isEmpty()) System.out.println("lista vuota!!");

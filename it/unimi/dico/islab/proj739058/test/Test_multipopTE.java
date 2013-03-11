@@ -33,9 +33,9 @@ public class Test_multipopTE {
 		Map<String,String> m = tm.getTextbyProperties(kcl1);
 		CorpusAnalyzer a = tm.getCorpusAnalyzer(m,language);
 		TermEquip te = new TermEquip(a);
-		//a.useLowerFilter(true);
-		//a.useElisionFilter(true);
-		//a.useStopFilter(true);
+		//a.useLowerFilter(true); //è questo il filtro che non consente la presenza degli hashtag nel term_equip
+		a.useElisionFilter(true);
+		a.useStopFilter(true);
 		//a.enableStemming();
 		te.popTE(a);
 				
