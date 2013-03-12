@@ -27,6 +27,8 @@ public class Test_multipopTE {
 		List<KnowledgeChunk> kcl1 = new ArrayList<KnowledgeChunk>();
 		TextManager tm = new TextManager();
 		
+		System.out.println("Inserisci i quattro kc-id che verranno considerati per la creazione del CorpusAnalyzer");
+		
 		for ( int i = 1 ; i <= 4 ; i++) 
 			kcl1.add(KCSessionManager.kcm.getKnowledgeChunkById(in.nextLine()));
 		
@@ -37,6 +39,7 @@ public class Test_multipopTE {
 		a.useElisionFilter(true);
 		a.useStopFilter(true);
 		//a.enableStemming();
+		a.enableLemmatization();
 		te.popTE(a);
 				
 	}

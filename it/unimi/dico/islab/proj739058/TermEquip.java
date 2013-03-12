@@ -1,10 +1,6 @@
 package it.unimi.dico.islab.proj739058;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,12 +9,10 @@ import java.util.Vector;
 
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
 
@@ -156,8 +150,8 @@ public class TermEquip {
 		StaffSax handler;
 
 		
-		List<List<Term>> l = new ArrayList();
-		List<Term>li = new ArrayList();
+		List<List<Term>> l = new ArrayList<List<Term>>();
+		List<Term>li = new ArrayList<Term>();
 		/*Getting terms SWITCH */
 		
 		//for-each kc of the kc that i want enrich (this is the base case)

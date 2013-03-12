@@ -1,2 +1,3 @@
-http://islab.di.unimi.it/sent_cloud/sentence#1 http://islab.di.unimi.it/sent_cloud/sentence#1
-http://islab.di.unimi.it/sent_cloud/sentence#10 http://islab.di.unimi.it/sent_cloud/sentence#10
+http://islab.di.unimi.it/sent_cloud/sentence http://islab.di.unimi.it/sent_cloud/sentence
+http://islab.di.unimi.it/sent_cloud/sentence#103 http://islab.di.unimi.it/sent_cloud/sentence#103
+http://islab.di.unimi.it/sent_cloud/sentence#104 http://islab.di.unimi.it/sent_cloud/sentence#104

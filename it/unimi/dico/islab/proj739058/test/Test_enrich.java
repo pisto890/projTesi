@@ -29,6 +29,8 @@ public class Test_enrich {
 		List<KnowledgeChunk> list = new ArrayList<KnowledgeChunk>();
 		TextManager tm = new TextManager();
 		
+		System.out.println("Inserisci i quattro kc-id che verranno considerati per la creazione del CorpusAnalyzer");
+		
 		for ( int i = 0 ; i < 4 ; i++) 
 			kcl.add(KCSessionManager.kcm.getKnowledgeChunkById(in.nextLine()));
 		

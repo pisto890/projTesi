@@ -30,10 +30,8 @@ public class Test_cosine {
 		TextManager tm = new TextManager();
 		DecimalFormat df = new DecimalFormat("#.##");
 		
-		//primo corpus
-		
-		System.out.println("Primo corpus");
-		
+		System.out.println("Inserisci i quattro kc-id che verranno considerati per la creazione del CorpusAnalyzer");
+				
 		for ( int i = 1 ; i <= 4 ; i++) 
 			kcl1.add(KCSessionManager.kcm.getKnowledgeChunkById(in.nextLine()));
 		

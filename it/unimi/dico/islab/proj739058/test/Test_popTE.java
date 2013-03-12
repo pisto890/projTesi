@@ -22,11 +22,16 @@ public class Test_popTE {
 		Scanner in = new Scanner(System.in);
 		KCSessionManager.beginTransaction();
 		TextManager tm = new TextManager();
+		System.out.println("Inserisci l'id del kc che verrà utilizzato per la creazione del CorpusAnalyzer");
 		Map<String,String> m = tm.getTextbyProperties(KCSessionManager.kcm.getKnowledgeChunkById(in.nextLine()));
-		System.out.println(m);
 		CorpusAnalyzer a = tm.getCorpusAnalyzer(m,language);
 		TermEquip te = new TermEquip(a);
+		a.useElisionFilter(true);
+		//a.useLowerFilter(true);
+		a.useStopFilter(true);
+		a.enableLemmatization();
 		te.popTE(a);
+		System.out.println("Inserimento avvenuto correttamente");
 	}
 
 }
